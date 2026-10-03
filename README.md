@@ -6,8 +6,7 @@
 
 ## 🔗 Live Demo
 
-- **Live Application URL:** `[task4-weatherpulse.netlify.app]`
----
+- **Live Application URL:** https://task4-weatherpulse.netlify.app/
 
 ## 📖 Table of Contents
 

@@ -6,10 +6,7 @@
 
 ## 🔗 Live Demo
 
-- **Live Application URL:** `[Your Live Demo Link Here]`
-- **Repository URL:** `[Your GitHub Repository Link Here]`
-- **Video Walkthrough / Preview:** `[Optional Video Demo Link Here]`
-
+- **Live Application URL:** `[task4-weatherpulse.netlify.app]`
 ---
 
 ## 📖 Table of Contents

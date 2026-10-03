@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherPulse — Real-Time Weather Dashboard</title>
+  <meta name="description" content="Task 4: Asynchronous JavaScript & RESTful APIs — Real-Time Weather Dashboard using Open-Meteo REST API.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-badge">⚡</span>
+        <span class="brand-title">WeatherPulse</span>
+        <span class="tag">Live REST</span>
+      </div>
+      <div class="header-actions">
+        <!-- Region Scope Selector -->
+        <div class="scope-toggle" role="group" aria-label="Region scope selection">
+          <button id="btn-scope-india" class="scope-btn active" type="button" aria-pressed="true">🇮🇳 India</button>
+          <button id="btn-scope-global" class="scope-btn" type="button" aria-pressed="false">🌐 Global</button>
+        </div>
+
+        <!-- Temperature Unit Toggle -->
+        <div class="unit-toggle" role="group" aria-label="Temperature unit selection">
+          <button id="btn-celsius" class="unit-btn active" type="button" aria-pressed="true">°C</button>
+          <button id="btn-fahrenheit" class="unit-btn" type="button" aria-pressed="false">°F</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- City Search Section -->
+    <section class="search-section" aria-label="City Weather Search">
+      <div class="scope-badge-bar">
+        <span id="scope-status" class="scope-status">🇮🇳 India Meteorological Mode · Filtered to countryCode=IN</span>
+      </div>
+      <form id="search-form" class="search-form">
+        <label for="city-input" class="sr-only">Enter city name</label>
+        <div class="input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="city-input"
+            placeholder="Search an Indian city (e.g., Pune, Mumbai, Delhi, Bengaluru)..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button type="button" id="clear-btn" class="clear-btn" aria-label="Clear input" style="display: none;">✕</button>
+          <button type="submit" id="search-btn" class="search-btn">
+            <span id="btn-text">Search</span>
+            <span id="btn-spinner" class="spinner" style="display: none;"></span>
+          </button>
+        </div>
+        <p id="input-validation" class="input-validation" style="display: none;"></p>
+      </form>
+
+      <!-- Quick City Suggestions -->
+      <div id="quick-cities" class="quick-cities" aria-label="Quick city suggestions">
+        <span class="quick-label">Quick Access:</span>
+        <button type="button" class="chip" data-city="Pune">Pune</button>
+        <button type="button" class="chip" data-city="Mumbai">Mumbai</button>
+        <button type="button" class="chip" data-city="New Delhi">New Delhi</button>
+        <button type="button" class="chip" data-city="Bengaluru">Bengaluru</button>
+        <button type="button" class="chip" data-city="Chennai">Chennai</button>
+        <button type="button" class="chip" data-city="Hyderabad">Hyderabad</button>
+      </div>
+    </section>
+
+    <!-- Error Notification Area -->
+    <section id="error-container" class="error-container" style="display: none;" role="alert" aria-live="assertive">
+      <div class="error-card">
+        <span class="error-icon">⚠️</span>
+        <div class="error-content">
+          <h3 id="error-title" class="error-title">Error</h3>
+          <p id="error-message" class="error-message"></p>
+          <p id="error-advice" class="error-advice"></p>
+          <button type="button" id="retry-btn" class="retry-btn">Retry Request</button>
+        </div>
+        <button type="button" id="dismiss-error-btn" class="dismiss-btn" aria-label="Dismiss error">✕</button>
+      </div>
+    </section>
+
+    <!-- Loading State Feedback -->
+    <section id="loading-container" class="loading-container" style="display: none;" role="status" aria-live="polite">
+      <div class="loading-indicator">
+        <div class="spinner-large"></div>
+        <p>Fetching real-time weather data from Open-Meteo REST API...</p>
+      </div>
+    </section>
+
+    <!-- Weather Dashboard Display -->
+    <div id="weather-dashboard" class="weather-dashboard" style="display: none;">
+      <!-- Feature B: Current Weather Card -->
+      <section class="current-weather-card">
+        <div class="current-top-bar">
+          <span class="coordinates-badge" id="coord-display">00.00°N, 00.00°E</span>
+          <div class="refresh-controls">
+            <span id="last-updated-display" class="last-updated-text">Updated: --</span>
+            <button type="button" id="manual-refresh-btn" class="refresh-action-btn" title="Refresh live weather readings">
+              <span id="refresh-icon">🔄</span>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+        <div class="current-header">
+          <div class="location-info">
+            <h1 id="city-name" class="city-name">--</h1>
+            <p id="country-name" class="country-name">--</p>
+          </div>
+          <div class="weather-visual">
+            <div id="weather-icon" class="weather-icon">☀️</div>
+            <div id="day-night-indicator" class="day-night-indicator">Daytime</div>
+            <div id="local-time" class="local-time">--:--</div>
+          </div>
+        </div>
+
+        <div class="current-temp-block">
+          <div class="temp-primary">
+            <span id="current-temp" class="current-temp">--</span>
+          </div>
+          <div class="condition-summary">
+            <h2 id="condition-label" class="condition-label">--</h2>
+            <p class="feels-like">Feels like <span id="feels-like-temp">--</span></p>
+          </div>
+        </div>
+
+        <div class="condition-footer">
+          <p id="condition-description" class="condition-description">--</p>
+          <span id="wmo-code-badge" class="wmo-code-badge">WMO Code --</span>
+        </div>
+      </section>
+
+      <!-- Feature B: Atmospheric Metrics Grid -->
+      <section class="metrics-section">
+        <h2 class="section-title">Atmospheric Metrics</h2>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Feels Like</span>
+              <span class="metric-icon">🌡️</span>
+            </div>
+            <div id="metric-feels-like" class="metric-value">--</div>
+            <div class="metric-subtext">Thermal sensation</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Relative Humidity</span>
+              <span class="metric-icon">💧</span>
+            </div>
+            <div id="metric-humidity" class="metric-value">--%</div>
+            <div id="metric-humidity-note" class="metric-subtext">Moisture level</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Wind Speed</span>
+              <span class="metric-icon">💨</span>
+            </div>
+            <div id="metric-wind" class="metric-value">-- km/h</div>
+            <div id="metric-wind-note" class="metric-subtext">10m above ground</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Precipitation</span>
+              <span class="metric-icon">🌧️</span>
+            </div>
+            <div id="metric-precip" class="metric-value">-- mm</div>
+            <div id="metric-precip-note" class="metric-subtext">Current interval</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Coordinates</span>
+              <span class="metric-icon">🧭</span>
+            </div>
+            <div id="metric-coords" class="metric-value">--</div>
+            <div class="metric-subtext">Latitude / Longitude</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Timezone</span>
+              <span class="metric-icon">⏱️</span>
+            </div>
+            <div id="metric-timezone" class="metric-value">--</div>
+            <div id="metric-timezone-sub" class="metric-subtext">Observation zone</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature C: 7-Day Multi-Day Forecast -->
+      <section class="forecast-section">
+        <h2 class="section-title">7-Day Meteorological Forecast</h2>
+        <div id="forecast-grid" class="forecast-grid">
+          <!-- Dynamically populated via script.js -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>WeatherPulse · Task 4: Asynchronous JavaScript & RESTful APIs · Deadline: 20 October 2026</p>
+      <p>Data provided by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

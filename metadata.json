@@ -1,0 +1,5 @@
+{
+  "name": "WeatherPulse — Real-Time Weather Dashboard",
+  "description": "A modern, responsive real-time weather dashboard fetching live meteorology and multi-day forecasts via Open-Meteo REST APIs with asynchronous JavaScript.",
+  "requestFramePermissions": []
+}
